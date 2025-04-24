@@ -6,13 +6,26 @@ pipeline {
         DOCKER_TAG = "${BUILD_NUMBER}"
     }
 
+     parameters {
+        gitParameter name: 'BRANCH_NAME',
+                    type: 'PT_BRANCH',
+                    defaultValue: 'main',
+                    description: 'Select the branch to build',
+                    branchFilter: 'origin/(.*)',
+                    selectedValue: 'DEFAULT',
+                    sortMode: 'DESCENDING_ALPHABETICALLY'
+    }
+
     stages {
-        stage('Clone') {
+         stage('Clone') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[url: 'YOUR_REPO_URL_HERE']]
+                ])
             }
         }
-
+        
         stage('Build') {
             steps {
                 sh 'npm install'
