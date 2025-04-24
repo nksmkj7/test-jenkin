@@ -1,31 +1,24 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = 'simple-node-app'
-        DOCKER_TAG = "${BUILD_NUMBER}"
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Enter the branch to build')
     }
 
-     parameters {
-        gitParameter name: 'BRANCH_NAME',
-                    type: 'PT_BRANCH',
-                    defaultValue: 'main',
-                    description: 'Select the branch to build',
-                    branchFilter: 'origin/(.*)',
-                    selectedValue: 'DEFAULT',
-                    sortMode: 'DESCENDING_ALPHABETICALLY'
+    environment {
+        DOCKER_IMAGE = 'simple-node-app'
     }
 
     stages {
-         stage('Clone') {
+        stage('Clone') {
             steps {
                 checkout([$class: 'GitSCM',
                     branches: [[name: "${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[url: 'YOUR_REPO_URL_HERE']]
+                    userRemoteConfigs: [[url: 'https://github.com/YOUR_USER/YOUR_REPO.git']]
                 ])
             }
         }
-        
+
         stage('Build') {
             steps {
                 sh 'npm install'
@@ -42,7 +35,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    def dockerTag = "${env.BUILD_NUMBER}"
+                    sh "docker build -t ${DOCKER_IMAGE}:${dockerTag} ."
                 }
             }
         }
@@ -50,12 +44,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop existing container if running
+                    def dockerTag = "${env.BUILD_NUMBER}"
                     sh "docker stop ${DOCKER_IMAGE} || true"
                     sh "docker rm ${DOCKER_IMAGE} || true"
-                    
-                    // Run new container
-                    sh "docker run -d --name ${DOCKER_IMAGE} -p 4444:4444 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker run -d --name ${DOCKER_IMAGE} -p 4444:4444 ${DOCKER_IMAGE}:${dockerTag}"
                 }
             }
         }
