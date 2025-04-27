@@ -26,7 +26,7 @@ pipeline {
                         branches: [[name: "${params.BRANCH_NAME}"]],
                         userRemoteConfigs: [[
                             url: 'https://github.com/nksmkj7/test-jenkin',
-                            credentialsId: '1226153'  // Optional: if repo is private
+                            credentialsId: 'companion-jenkins-ci'  // Optional: if repo is private
                         ]]
                         extensions: [[$class: 'GitSCMSourceDefaults']]
                     ])
