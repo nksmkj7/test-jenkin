@@ -21,8 +21,16 @@ pipeline {
                     echo "Selected branch: ${params.BRANCH_NAME}"
                     
                     // Checkout the selected branch
-                    checkout scm
-                    sh "git checkout ${params.BRANCH_NAME}"
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "${params.BRANCH_NAME}"]],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/nksmkj7/test-jenkin',
+                            credentialsId: 'companion-jenkins-ci'  // Optional: if repo is private
+                        ]]
+                        extensions: [[$class: 'GitSCMSourceDefaults']]
+                    ])
+                   
                 }
             }
         }
