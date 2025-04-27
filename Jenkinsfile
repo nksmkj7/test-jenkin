@@ -7,9 +7,9 @@ pipeline {
             type: 'PT_BRANCH',              // Type for Git branches
             description: 'Select the Git branch to build', // Description shown in the UI
             branchFilter: 'origin/*',       // Filters branches to show (all remote branches)
-            defaultValue: 'origin/master',  // Default branch selected (e.g., master)
+            defaultValue: 'origin/main',  // Default branch selected (e.g., master)
             selectedValue: 'DEFAULT',       // Pre-select the default value automatically
-            sortMode: 'ASCENDING',          // Sort the branches alphabetically
+            sortMode: 'DESCENDING_SMART',          // Sort the branches alphabetically
             useRepository: 'true'           // Use the repository defined in the SCM
         )
     }
