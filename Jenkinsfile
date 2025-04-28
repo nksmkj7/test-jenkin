@@ -1,30 +1,23 @@
 pipeline {
     agent any
 
-
     stages {
-        stage('Clean workspace') {
-            steps {
-                deleteDir()
-                // checkout scm
-            }
-        }
-
         stage('Checkout') {
             steps {
-                script {
-                    echo "Selected branch: ${params.BRANCH_NAME}"
-                    checkout scm
-                   
-
-
-                }
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/nksmkj7/test-jenkin'
+                    ]]
+                ])
             }
         }
 
         stage('Build') {
             steps {
-                echo "Building the selected branch: ${params.BRANCH_NAME}"
+                sh 'npm install'
+                sh 'npm run build --if-present'
             }
         }
 
@@ -39,6 +32,12 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
