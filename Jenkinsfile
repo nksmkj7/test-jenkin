@@ -14,6 +14,14 @@ pipeline {
     }
 
     stages {
+       
+
+        stage('Clean workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 script {
@@ -24,12 +32,6 @@ pipeline {
                     checkout scm
                     sh "git checkout ${params.BRANCH_NAME}"
                 }
-            }
-        }
-
-        stage('Clean workspace') {
-            steps {
-                deleteDir()
             }
         }
 
