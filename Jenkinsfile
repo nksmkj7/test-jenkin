@@ -17,13 +17,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/nksmkj7/test-jenkin'
-                    ]]
-                ])
+                // checkout([
+                //     $class: 'GitSCM',
+                //     branches: [[name: "${params.BRANCH_NAME}"]],
+                //     userRemoteConfigs: [[
+                //         url: 'https://github.com/nksmkj7/test-jenkin'
+                //     ]]
+                // ])
+                checkout scm
             }
         }
 
