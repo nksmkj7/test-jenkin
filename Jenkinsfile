@@ -14,6 +14,9 @@ pipeline {
             steps {
                 script {
                     echo "Selected branch: ${params.BRANCH_NAME}"
+                    checkout scm
+                   
+
 
                 }
             }
@@ -21,12 +24,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                checkout scm
-                sh """
-                    git checkout ${params.BRANCH_NAME}
-                    git branch
-                """
-                echo "Checked out branch: ${params.BRANCH_NAME}"
+                echo "Building the selected branch: ${params.BRANCH_NAME}"
             }
         }
 
