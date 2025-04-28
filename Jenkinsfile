@@ -20,8 +20,7 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: "${params.BRANCH_NAME}"]],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/nksmkj7/test-jenkin',
-                        credentialsId: 'companion-jenkins-ci'
+                        url: 'https://github.com/nksmkj7/test-jenkin'
                     ]]
                 ])
             }
