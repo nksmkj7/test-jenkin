@@ -2,13 +2,13 @@ pipeline {
     agent any
     parameters {
         gitParameter(
-            name: 'BRANCH_NAME',
-            type: 'PT_BRANCH',
+            name: 'BRANCH_NAME',                    // This must match ${params.BRANCH_NAME}
+            type: 'PT_BRANCH',                      
             description: 'Select the Git branch to build',
-            branchFilter: 'origin/*',
+            branchFilter: 'origin/(.*)',            // Changed to capture all branches
             defaultValue: 'origin/main',
-            selectedValue: 'NONE',
-            sortMode: 'DESCENDING_SMART'
+            selectedValue: 'DEFAULT',               // Changed from NONE to DEFAULT
+            sortMode: 'DESCENDING_ALPHABETICALLY'   // More intuitive sorting
         )
     }
 
