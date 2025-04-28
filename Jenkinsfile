@@ -6,10 +6,11 @@ pipeline {
             name: 'BRANCH_NAME',
             type: 'PT_BRANCH',
             description: 'Select the Git branch to build',
-            branchFilter: 'origin/*',
+            branchFilter: '*',
             defaultValue: 'origin/main',
             selectedValue: 'DEFAULT',
-            sortMode: 'DESCENDING_SMART'
+            sortMode: 'DESCENDING_SMART',
+            useRepository: 'https://github.com/nksmkj7/test-jenkin'
         )
     }
 
