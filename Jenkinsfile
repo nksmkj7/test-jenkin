@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     parameters {
         gitParameter(
             name: 'BRANCH_NAME',
@@ -14,52 +13,20 @@ pipeline {
     }
 
     stages {
-       
-
-        stage('Clean workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
         stage('Checkout') {
             steps {
                 script {
-                    // Echo the selected branch for debugging
                     echo "Selected branch: ${params.BRANCH_NAME}"
                     
-                    // Checkout the selected branch
-                    checkout scm
-                    sh "git checkout ${params.BRANCH_NAME}"
+
                 }
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building the application...'
-                // sh 'npm install'
-                // sh 'npm run build --if-present'
+                echo "Building the selected branch: ${params.BRANCH_NAME}"
             }
-        }
-
-        stage('Docker Build') {
-            steps {
-                script {
-                    def commitId = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-                    def imageTag = "${env.BUILD_NUMBER}-${commitId}"
-                    
-                    sh """
-                        docker build -t simple-node-app:${imageTag} .
-                    """
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
