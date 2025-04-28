@@ -1,18 +1,43 @@
 pipeline {
     agent any
 
+    // parameters {
+    //     gitParameter(
+    //         name: 'BRANCH_NAME',
+    //         type: 'PT_BRANCH',
+    //         description: 'Select the Git branch to build',
+    //         branchFilter: 'origin/*',
+    //         defaultValue: 'origin/main',
+    //         selectedValue: 'NONE',
+    //         sortMode: 'DESCENDING_SMART'
+    //     )
+    // }
+
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    echo "Selected branch: ${params.BRANCH_NAME}"
-                }
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[
+                        url: 'YOUR_REPO_URL',
+                        credentialsId: 'YOUR_CREDENTIALS_ID'
+                    ]]
+                ])
             }
         }
 
         stage('Clean workspace') {
             steps {
                 deleteDir()
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the application...'
+                // sh 'npm install'
+                // sh 'npm run build --if-present'
             }
         }
 
@@ -28,11 +53,11 @@ pipeline {
                 }
             }
         }
+    }
 
-        stage('Build') {
-            steps {
-                echo "Building the selected branch: ${params.BRANCH_NAME}"
-            }
+    post {
+        always {
+            cleanWs()
         }
     }
 }
