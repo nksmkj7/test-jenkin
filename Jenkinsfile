@@ -17,16 +17,6 @@ pipeline {
             steps {
                 script {
                     echo "Selected branch: ${params.BRANCH_NAME}"
-                    
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "${params.BRANCH_NAME}"]],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/nksmkj7/test-jenkin',
-                            credentialsId: 'companion-jenkins-ci'
-                        ]],  // Added missing closing bracket here
-                        extensions: [[$class: 'GitSCMSourceDefaults']]
-                    ])
                 }
             }
         }
