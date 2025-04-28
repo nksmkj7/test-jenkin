@@ -16,14 +16,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[
-                        url: 'YOUR_REPO_URL',
-                        credentialsId: 'YOUR_CREDENTIALS_ID'
-                    ]]
-                ])
+                script {
+                    // Echo the selected branch for debugging
+                    echo "Selected branch: ${params.BRANCH_NAME}"
+                    
+                    // Checkout the selected branch
+                    checkout scm
+                    sh "git checkout ${params.BRANCH_NAME}"
+                }
             }
         }
 
