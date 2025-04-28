@@ -6,6 +6,7 @@ pipeline {
         stage('Clean workspace') {
             steps {
                 deleteDir()
+                // checkout scm
             }
         }
 
@@ -13,7 +14,6 @@ pipeline {
             steps {
                 script {
                     echo "Selected branch: ${params.BRANCH_NAME}"
-                    
 
                 }
             }
@@ -21,7 +21,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building the selected branch: ${params.BRANCH_NAME}"
+                checkout scm
+                sh """
+                    git checkout ${params.BRANCH_NAME}
+                    git branch
+                """
+                echo "Checked out branch: ${params.BRANCH_NAME}"
             }
         }
 
