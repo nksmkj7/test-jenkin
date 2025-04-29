@@ -2,7 +2,11 @@ pipeline {
     agent any
     
     parameters {
-        string(name: 'BRANCH', description: 'Branch to Deploy', defaultValue: 'develop')
+        choice(
+            name: 'BRANCH',
+            choices: evaluateGitBranches(),
+            description: 'Select the branch to build'
+        )
     }
     
     environment {
@@ -85,4 +89,19 @@ pipeline {
             }
         }
     }
+}
+
+def evaluateGitBranches() {
+    def branches = []
+    try {
+        def branchOutput = sh(
+            script: 'git ls-remote --heads origin | cut -d "/" -f 3',
+            returnStdout: true
+        ).trim()
+        branches = branchOutput.split('\n')
+    } catch (err) {
+        echo "Error getting branches: ${err}"
+        branches = ['main', 'develop']  // fallback branches
+    }
+    return branches
 }
