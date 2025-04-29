@@ -1,17 +1,18 @@
 pipeline {
     agent any
     
-    environment {
-        COMMIT_ID = sh(script: "git log -n 1 --pretty=format:'%h'", returnStdout: true).trim()
+    parameters {
+        string(name: 'BRANCH', description: 'Branch to Deploy', defaultValue: 'develop')
     }
     
-    options {
-        skipDefaultCheckout(false)
-        disableConcurrentBuilds()
+    environment {
+        STATUS = 'STARTED'
+        CCODE = 'warning'
+        GIT_COMMIT_HASH = 'Unable to fetch, yet to git clone !!'
     }
     
     stages {
-        stage('Clean workspace') {
+        stage('Clean workspace before build') {
             steps {
                 deleteDir()
             }
@@ -19,79 +20,69 @@ pipeline {
         
         stage('Code checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${params.BRANCH}"]],
+                script {
+                    STATUS = 'FAILED'
+                    CCODE = 'danger'
+                }
+                
+                checkout([$class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH}"]],
                     gitTool: 'Default',
-                    userRemoteConfigs: [[
-                        credentialsId: 'companion-jenkins-ci',
-                        url: 'https://github.com/nksmkj7/test-jenkin'
-                    ]]
+                    userRemoteConfigs: [[credentialsId: 'companion-jenkins-ci',
+                    url: 'https://github.com/nksmkj7/test-jenkin']]
                 ])
+                
+                script {
+                    GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%h'", returnStdout: true).trim()
+                }
             }
         }
         
         stage('Build') {
             steps {
-                echo "hello from build"
+                echo 'Building..'
             }
         }
         
         stage('Lint') {
             steps {
-                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                    echo "hello from lint"
-                }
+                echo 'Linting..'
             }
         }
         
         stage('Test') {
             steps {
-                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                    echo "hello from test"
-                }
+                echo 'Testing..'
             }
         }
         
+        /* Commented out as in original file
+        stage('Publish Reports') {
+            steps {
+                sh 'make publish_sonar'
+            }
+        }
         
-        // stage('Docker Build') {
-        //     steps {
-        //         script {
-        //             def imageTag = env.BUILD_NUMBER + '.0_' + env.COMMIT_ID
-                    
-        //             sh """
-        //             cd \${WORKSPACE}
-        //             cp ~/envsettings/.env.catalog-service .env
-        //             docker build -f ./docker/Dockerfile -t catalog-service:${imageTag} .
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Check_Quality_Gates') {
+            steps {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sonar-mosaic',
+                    usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    sh "make check_quality_gates"
+                }
+            }
+        }
+        */
         
-        // stage('Docker Run') {
-        //     steps {
-        //         script {
-        //             def imageTag = env.BUILD_NUMBER + '.0_' + env.COMMIT_ID
-                    
-        //             sh """
-        //             docker container stop catalog-service || true
-        //             docker container rm catalog-service || true
-        //             docker run -d -p 30090:3000 --name catalog-service --restart unless-stopped catalog-service:${imageTag}
-        //             """
-        //         }
-        //     }
-        // }
     }
     
     post {
         always {
-            deleteDir()
+            echo "Status : ${STATUS}\nRepo : mosaic-ams-service , Branch : ${params.BRANCH} , Commit : ${GIT_COMMIT_HASH}\nURL : ${env.BUILD_URL}"
         }
         failure {
-            echo "hello from failure"
-        }
-        success {
-            echo "hello from success"
+            script {
+                echo "Build failed"
+            }
         }
     }
 }
