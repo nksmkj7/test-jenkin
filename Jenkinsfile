@@ -77,7 +77,7 @@ pipeline {
     
     post {
         always {
-            echo "Status : ${STATUS}\nRepo : mosaic-ams-service , Branch : ${params.BRANCH} , Commit : ${GIT_COMMIT_HASH}\nURL : ${env.BUILD_URL}"
+            echo "Cleaning up workspace"
         }
         failure {
             script {
