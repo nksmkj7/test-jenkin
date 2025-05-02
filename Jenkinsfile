@@ -48,11 +48,11 @@ def getGitBranches() {
                                                 usernameVariable: 'GIT_USERNAME', 
                                                 passwordVariable: 'GIT_PASSWORD')]) {
                     def output = sh(
-                        script: """
-                            curl -s -u ${GIT_USERNAME}:${GIT_PASSWORD} \
+                        script: '''
+                            curl -s -u $GIT_USERNAME:$GIT_PASSWORD \
                             https://api.github.com/repos/nksmkj7/test-jenkin/branches | \
                             grep -o '"name": "[^"]*' | cut -d'"' -f4
-                        """,
+                        ''',
                         returnStdout: true
                     ).trim()
                     
