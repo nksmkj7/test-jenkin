@@ -44,7 +44,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                echo 'change Building..'
+                echo 'latest change Building..'
             }
         }
         
@@ -94,23 +94,34 @@ pipeline {
 def evaluateGitBranches() {
     def branches = []
     try {
-        def branchOutput = sh(
-            script: 'git ls-remote --heads https://github.com/nksmkj7/test-jenkin | cut -d "/" -f 3',
-            returnStdout: true
-        ).trim()
-        branches = branchOutput.split('\n')
-        
-        echo "Available branches:"
-        branches.each { branch ->
-            echo "  - ${branch}"
+        // Use withCredentials if authentication is needed
+        withCredentials([usernamePassword(credentialsId: 'for-companion-site', 
+                                        usernameVariable: 'GIT_USERNAME', 
+                                        passwordVariable: 'GIT_PASSWORD')]) {
+            def branchOutput = sh(
+                script: """
+                    curl -s -u ${GIT_USERNAME}:${GIT_PASSWORD} \
+                    'https://api.github.com/repos/nksmkj7/test-jenkin/branches' | \
+                    grep -o '"name": "[^"]*' | \
+                    cut -d'"' -f4
+                """,
+                returnStdout: true
+            ).trim()
+            
+            branches = branchOutput.split('\n')
+            echo "Available branches:"
+            branches.each { branch ->
+                echo "  - ${branch}"
+            }
         }
 
         if (branches.size() == 0) {
-            branches = ['main', 'develop']  // fallback if no branches found
+            echo "No branches found, using fallback branches"
+            branches = ['main', 'develop']
         }
     } catch (err) {
         echo "Error getting branches: ${err}"
-        branches = ['main', 'develop']  // fallback branches
+        branches = ['main', 'develop']
     }
     return branches
 }
