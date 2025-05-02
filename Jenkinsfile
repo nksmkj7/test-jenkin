@@ -32,7 +32,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                     branches: [[name: "*/${params.BRANCH}"]],
                     gitTool: 'Default',
-                    userRemoteConfigs: [[credentialsId: 'companion-jenkins-ci',
+                    userRemoteConfigs: [[credentialsId: 'for-companion-site',
                     url: 'https://github.com/nksmkj7/test-jenkin']]
                 ])
                 
@@ -95,10 +95,19 @@ def evaluateGitBranches() {
     def branches = []
     try {
         def branchOutput = sh(
-            script: 'git ls-remote --heads origin | cut -d "/" -f 3',
+            script: 'git ls-remote --heads https://github.com/nksmkj7/test-jenkin | cut -d "/" -f 3',
             returnStdout: true
         ).trim()
         branches = branchOutput.split('\n')
+        
+        echo "Available branches:"
+        branches.each { branch ->
+            echo "  - ${branch}"
+        }
+        
+        if (branches.size() == 0) {
+            branches = ['main', 'develop']  // fallback if no branches found
+        }
     } catch (err) {
         echo "Error getting branches: ${err}"
         branches = ['main', 'develop']  // fallback branches
