@@ -1,74 +1,64 @@
-pipeline {
-    agent any
-
-    parameters {
+properties([
+    parameters([
         choice(
             name: 'BRANCH',
-            choices: ['main', 'develop', 'feature-x'],
+            choices: getGitBranches(),
             description: 'Select the branch to build'
         )
+    ])
+])
+
+node {
+    stage('Clean workspace before build') {
+        deleteDir()
     }
 
-    environment {
-        STATUS = 'STARTED'
-        CCODE = 'warning'
-        GIT_COMMIT_HASH = 'Unable to fetch, yet to git clone !!'
+    stage('Checkout Code') {
+        checkout([$class: 'GitSCM',
+            branches: [[name: "*/${params.BRANCH}"]],
+            userRemoteConfigs: [[
+                url: 'https://github.com/nksmkj7/test-jenkin.git',
+                credentialsId: 'for-companion-site'
+            ]]
+        ])
+
+        env.GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%h'", returnStdout: true).trim()
+        echo "Checked out commit: ${env.GIT_COMMIT_HASH}"
     }
 
-    stages {
-        stage('Clean workspace before build') {
-            steps {
-                deleteDir()
-            }
-        }
+    stage('Build') {
+        echo "Building branch ${params.BRANCH}"
+    }
 
-        stage('Code checkout') {
-            steps {
-                script {
-                    STATUS = 'FAILED'
-                    CCODE = 'danger'
-                }
+    stage('Lint') {
+        echo 'Linting...'
+    }
 
-                checkout([$class: 'GitSCM',
-                    branches: [[name: "*/${params.BRANCH}"]],
-                    gitTool: 'Default',
-                    userRemoteConfigs: [[
-                        credentialsId: 'for-companion-site',
-                        url: 'https://github.com/nksmkj7/test-jenkin'
-                    ]]
-                ])
+    stage('Test') {
+        echo ' scripted Testing...'
+    }
+}
 
-                script {
-                    GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%h'", returnStdout: true).trim()
-                }
-            }
-        }
+def getGitBranches() {
+    def branches = []
+    node {
+        withCredentials([usernamePassword(credentialsId: 'for-companion-site', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+            def output = sh(
+                script: """
+                    curl -s -u ${GIT_USERNAME}:${GIT_PASSWORD} \
+                    https://api.github.com/repos/nksmkj7/test-jenkin/branches | \
+                    grep -o '"name": "[^"]*' | cut -d'"' -f4
+                """,
+                returnStdout: true
+            ).trim()
 
-        stage('Build') {
-            steps {
-                echo 'Building..'
-            }
-        }
-
-        stage('Lint') {
-            steps {
-                echo 'Linting..'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
+            branches = output.tokenize('\n')
         }
     }
 
-    post {
-        always {
-            echo "Cleaning up workspace"
-        }
-        failure {
-            echo "Build failed"
-        }
+    if (branches.isEmpty()) {
+        branches = ['main', 'develop'] // fallback
     }
+
+    return branches
 }
