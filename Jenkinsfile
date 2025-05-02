@@ -44,7 +44,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'change Building..'
             }
         }
         
@@ -104,7 +104,7 @@ def evaluateGitBranches() {
         branches.each { branch ->
             echo "  - ${branch}"
         }
-        
+
         if (branches.size() == 0) {
             branches = ['main', 'develop']  // fallback if no branches found
         }
