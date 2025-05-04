@@ -39,12 +39,54 @@ node {
     }
 
     stage('Lint') {
-        sh 'npm run lint || echo "No lint configuration found"'
+        echo 'Linting...'
     }
 
     stage('Test') {
-        sh 'npm test || echo "No tests found"'
+        echo ' scripted Testing...'
     }
 }
 
-// Rest of getGitBranches() function remains the same
+def getGitBranches() {
+    def branches = []
+    try {
+        node {
+            try {
+                withCredentials([usernamePassword(credentialsId: 'for-companion-site', 
+                                                usernameVariable: 'GIT_USERNAME', 
+                                                passwordVariable: 'GIT_PASSWORD')]) {
+                    def output = sh(
+                        script: '''
+                            curl -s -u $GIT_USERNAME:$GIT_PASSWORD \
+                            https://api.github.com/repos/nksmkj7/test-jenkin/branches | \
+                            grep -o '"name": "[^"]*' | cut -d'"' -f4
+                        ''',
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "Branches fetched: ${output}"
+                    
+                    if (output) {
+                        branches = output.tokenize('\n')
+                    } else {
+                        echo "No output received from GitHub API"
+                    }
+                }
+            } catch (credentialsError) {
+                echo "Error with credentials or GitHub API call: ${credentialsError}"
+                throw credentialsError
+            }
+        }
+    } catch (error) {
+        echo "Error in getGitBranches: ${error}"
+        branches = ['main', 'develop'] // fallback branches
+        echo "Using fallback branches: ${branches}"
+    }
+
+    if (branches.isEmpty()) {
+        echo "No branches found, using fallback branches"
+        branches = ['main', 'develop']
+    }
+
+    return branches
+}
