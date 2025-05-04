@@ -30,10 +30,10 @@ node {
         // Remove 'steps' block - not needed in scripted pipeline
         script {
             // Build Docker image
-            def imageTag = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_HASH}"
+            // def imageTag = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_HASH}"
             sh """
-                docker build -t simple-node-app:${imageTag} .
-                echo "Built Docker image: simple-node-app:${imageTag}"
+                docker build -t simple-node-app:local .
+                echo "Built Docker image: simple-node-app:local"
             """
         }
     }
@@ -56,7 +56,7 @@ node {
                     docker run -d \
                         --name simple-node-app \
                         -p 4444:4444 \
-                        simple-node-app:${env.DOCKER_IMAGE_TAG}
+                        simple-node-app:local
                 """
                 
                 echo "Container started successfully"
