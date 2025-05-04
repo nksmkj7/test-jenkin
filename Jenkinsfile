@@ -77,13 +77,12 @@ node {
             }
         }
     }
-
-    stage('Lint') {
-        echo 'Linting...'
-    }
-
-    stage('Test') {
-        echo ' scripted Testing...'
+    
+    post {
+        always {
+            deleteDir()
+            echo "Workspace cleaned up"
+        }
     }
 }
 
