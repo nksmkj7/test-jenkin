@@ -27,7 +27,16 @@ node {
     }
 
     stage('Build') {
-        echo "Building branch ${params.BRANCH}"
+        steps {
+            script {
+                // Build Docker image
+                def imageTag = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_HASH}"
+                sh """
+                    docker build -t simple-node-app:${imageTag} .
+                    echo "Built Docker image: simple-node-app:${imageTag}"
+                """
+            }
+        }
     }
 
     stage('Lint') {
