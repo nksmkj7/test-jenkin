@@ -38,6 +38,46 @@ node {
         }
     }
 
+    stage('Docker Run') {
+        script {
+            try {
+                // Stop and remove existing container if it exists
+                sh '''
+                    CONTAINER_NAME="simple-node-app"
+                    if docker ps -a | grep -q $CONTAINER_NAME; then
+                        echo "Stopping and removing existing container..."
+                        docker stop $CONTAINER_NAME || true
+                        docker rm $CONTAINER_NAME || true
+                    fi
+                '''
+                
+                // Run new container
+                sh """
+                    docker run -d \
+                        --name simple-node-app \
+                        -p 4444:4444 \
+                        simple-node-app:${env.DOCKER_IMAGE_TAG}
+                """
+                
+                echo "Container started successfully"
+                
+                // Wait for container to be ready
+                sh 'sleep 10'
+                
+                // Verify container is running
+                sh '''
+                    if ! docker ps | grep -q simple-node-app; then
+                        echo "Container failed to start"
+                        exit 1
+                    fi
+                '''
+            } catch (error) {
+                echo "Failed to run Docker container: ${error}"
+                throw error
+            }
+        }
+    }
+
     stage('Lint') {
         echo 'Linting...'
     }
